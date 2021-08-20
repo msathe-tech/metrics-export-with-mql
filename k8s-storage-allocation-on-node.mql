@@ -1,0 +1,30 @@
+{ t_0:
+    fetch k8s_container
+    | metric 'kubernetes.io/anthos/kube_pod_container_resource_requests'
+    | filter (metric.resource == 'ephemeral_storage')
+    | group_by 1m,
+        [value_kube_pod_container_resource_requests_mean:
+           mean(value.kube_pod_container_resource_requests)]
+    | every 1m
+    | group_by [node: metric.node],
+        [value_kube_pod_container_resource_requests_mean_aggregate:
+           aggregate(value_kube_pod_container_resource_requests_mean)]
+; t_1:
+    fetch k8s_node
+    | metric 'kubernetes.io/anthos/node_filesystem_avail_bytes'
+    | filter (metric.fstype != 'tmpfs')
+    | group_by 1m,
+        [value_node_filesystem_avail_bytes_mean:
+           mean(value.node_filesystem_avail_bytes)]
+    | every 1m
+    | group_by [node: resource.node_name],
+        [value_node_filesystem_avail_bytes_mean_aggregate:
+           aggregate(value_node_filesystem_avail_bytes_mean)] }
+| join
+| value
+    [v_0:
+       cast_units(
+         div(t_0.value_kube_pod_container_resource_requests_mean_aggregate,
+           t_1.value_node_filesystem_avail_bytes_mean_aggregate) * 100,
+         '%')]
+| top 10, v_0

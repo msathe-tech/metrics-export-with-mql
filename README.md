@@ -17,6 +17,8 @@ This tutorial uses billable components of Google Cloud, including the following:
 -  [Google Cloud Pub/Sub](https://cloud.google.com/pubsub/pricing)
 -  [Google Cloud Scheduler](https://cloud.google.com/scheduler/pricing)
 -  [Google BigQuery](https://cloud.google.com/bigquery/pricing)
+-  [Google Cloud Build](https://cloud.google.com/build)
+-  [Google Cloud App Engine](https://cloud.google.com/appengine)
 
 Use the [pricing calculator](https://cloud.google.com/products/calculator) to generate a cost estimate based on your projected usage.
 
@@ -83,8 +85,8 @@ The sample code for this tutorial is in the
 
 1.  Create a BigQuery Dataset and then a table using the schema JSON files.
 
-        bq mk $BIGQUERY_DATASET
-        bq mk --table ${BIGQUERY_DATASET}.${BIGQUERY_TABLE}  ./bigquery_schema.json
+        bq mk --project_id=$PROJECT_ID $BIGQUERY_DATASET
+        bq mk --project_id=$PROJECT_ID --table ${BIGQUERY_DATASET}.${BIGQUERY_TABLE}  ./bigquery_schema.json
 
 1. Create a service account for the export cloud function
 
@@ -105,7 +107,7 @@ The sample code for this tutorial is in the
 
         gcloud pubsub topics create $PUBSUB_TOPIC
 
-1. Deploy the Cloud Function
+1. Deploy the Cloud Function. ***Make sure*** you use the required MQL in the ```config.py```. Anytime you add or change MQL in the ```config.py``` you have to redeploy the function. ***Make sure*** you set the ENV vars correctly before you redeploy the function. ***IMP*** The MQL shouldn't use double quotes for any symbol such as %. Instead use single quote. 
 
         gcloud functions deploy mql_export_metrics \
         --trigger-topic $PUBSUB_TOPIC \

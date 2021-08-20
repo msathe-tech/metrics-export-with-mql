@@ -1,0 +1,33 @@
+{ t_0:
+    fetch k8s_node
+    | metric 'kubernetes.io/anthos/node_filesystem_avail_bytes'
+    | filter (metric.fstype != 'tmpfs')
+    | group_by 1m,
+        [value_node_filesystem_avail_bytes_mean:
+           mean(value.node_filesystem_avail_bytes)]
+    | every 1m
+    | group_by
+        [device: metric.device, node: resource.node_name],
+        [value_node_filesystem_avail_bytes_mean_aggregate:
+           aggregate(value_node_filesystem_avail_bytes_mean)]
+; t_1:
+    fetch k8s_node
+    | metric 'kubernetes.io/anthos/node_filesystem_size_bytes'
+    | filter (metric.fstype != 'tmpfs')
+    | group_by 1m,
+        [value_node_filesystem_size_bytes_mean:
+           mean(value.node_filesystem_size_bytes)]
+    | every 1m
+    | group_by
+        [device: metric.device, node: resource.node_name],
+        [value_node_filesystem_size_bytes_mean_aggregate:
+           aggregate(value_node_filesystem_size_bytes_mean)] }
+| join
+| value
+    [v_0:
+       cast_units(
+         div(
+           sub(t_1.value_node_filesystem_size_bytes_mean_aggregate,
+             t_0.value_node_filesystem_avail_bytes_mean_aggregate),
+           t_1.value_node_filesystem_size_bytes_mean_aggregate) * 100,
+         '%')]

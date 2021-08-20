@@ -1,0 +1,7 @@
+fetch k8s_node
+| metric 'kubernetes.io/anthos/node_network_transmit_bytes_total'
+| align rate(1m)
+| every 1m
+| group_by [resource.node_name],
+    [value_node_network_transmit_bytes_total_aggregate:
+       aggregate(value.node_network_transmit_bytes_total)]

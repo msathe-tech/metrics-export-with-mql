@@ -1,0 +1,7 @@
+fetch k8s_container
+| metric 'kubernetes.io/anthos/up'
+| filter (resource.container_name == 'kube-apiserver')
+| group_by 1m, [value_up_mean: mean(value.up)]
+| every 1m
+| group_by [resource.cluster_name],
+    [value_up_mean_aggregate: aggregate(value_up_mean)]

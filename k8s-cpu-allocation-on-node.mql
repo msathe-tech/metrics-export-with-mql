@@ -1,0 +1,31 @@
+{ t_0:
+    fetch k8s_container
+    | metric
+        'kubernetes.io/anthos/kube_pod_container_resource_requests_cpu_cores'
+    | group_by 1m,
+        [value_kube_pod_container_resource_requests_cpu_cores_mean:
+           mean(value.kube_pod_container_resource_requests_cpu_cores)]
+    | every 1m
+    | group_by [node: metric.node],
+        [value_kube_pod_container_resource_requests_cpu_cores_mean_aggregate:
+           aggregate(value_kube_pod_container_resource_requests_cpu_cores_mean)]
+; t_1:
+    fetch k8s_container
+    | metric 'kubernetes.io/anthos/kube_node_status_allocatable_cpu_cores'
+    | group_by 1m,
+        [value_kube_node_status_allocatable_cpu_cores_mean:
+           mean(value.kube_node_status_allocatable_cpu_cores)]
+    | every 1m
+    | group_by [node: metric.node],
+        [value_kube_node_status_allocatable_cpu_cores_mean_aggregate:
+           aggregate(value_kube_node_status_allocatable_cpu_cores_mean)] }
+| join
+| value
+    [v_0:
+       cast_units(
+         div(
+           t_0.value_kube_pod_container_resource_requests_cpu_cores_mean_aggregate,
+           t_1.value_kube_node_status_allocatable_cpu_cores_mean_aggregate)
+         * 100,
+         '%')]
+| top 10, v_0

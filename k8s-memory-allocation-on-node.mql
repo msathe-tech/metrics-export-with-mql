@@ -1,0 +1,30 @@
+{ t_0:
+    fetch k8s_container
+    | metric
+        'kubernetes.io/anthos/kube_pod_container_resource_requests_memory_bytes'
+    | group_by 1m,
+        [value_kube_pod_container_resource_requests_memory_bytes_mean:
+           mean(value.kube_pod_container_resource_requests_memory_bytes)]
+    | every 1m
+    | group_by [node: metric.node],
+        [value_memory_requested_bytes:
+           aggregate(
+             value_kube_pod_container_resource_requests_memory_bytes_mean)]
+; t_1:
+    fetch k8s_container
+    | metric 'kubernetes.io/anthos/kube_node_status_allocatable_memory_bytes'
+    | group_by 1m,
+        [value_kube_node_status_allocatable_memory_bytes_mean:
+           mean(value.kube_node_status_allocatable_memory_bytes)]
+    | every 1m
+    | group_by [node: metric.node],
+        [value_allocatable_memory_bytes:
+           aggregate(value_kube_node_status_allocatable_memory_bytes_mean)] }
+| join
+| value
+    [v_0:
+       cast_units(
+         div(t_0.value_memory_requested_bytes,
+           t_1.value_allocatable_memory_bytes) * 100,
+         '%')]
+| top 10, v_0
