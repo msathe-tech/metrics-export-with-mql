@@ -194,6 +194,95 @@ fetch k8s_container
 | every 1m
 | group_by [resource.cluster_name],
     [value_up_mean_aggregate: aggregate(value_up_mean)]
+""",
+"top_10_containers_by_cpu_seconds":
+"""
+fetch k8s_container
+| metric 'kubernetes.io/anthos/process_cpu_seconds_total'
+| align rate(1m)
+| every 1m
+| top 10, max(value.process_cpu_seconds_total)
+""",
+"top_10_containers_by_cpu_cores_requested":
+"""
+fetch k8s_container
+| metric 'kubernetes.io/anthos/kube_pod_container_resource_requests_cpu_cores'
+| group_by 1m,
+    [value_kube_pod_container_resource_requests_cpu_cores_mean:
+       mean(value.kube_pod_container_resource_requests_cpu_cores)]
+| every 1m
+| top 10
+| group_by
+    [metric.container, metric.namespace, metric.node, metric.pod,
+     resource.location, resource.cluster_name, resource.namespace_name,
+     resource.pod_name, resource.container_name],
+    [value_kube_pod_container_resource_requests_cpu_cores_mean_aggregate:
+       aggregate(value_kube_pod_container_resource_requests_cpu_cores_mean)]
+""",
+"top_10_containers_by_memory_usage":
+"""
+fetch k8s_node
+| metric 'kubernetes.io/anthos/container_memory_working_set_bytes'
+| filter (metric.pod =~ '.+')
+| group_by 1m,
+    [value_container_memory_working_set_bytes_mean:
+       mean(value.container_memory_working_set_bytes)]
+| every 1m
+| top 10
+| group_by
+    [metric.container, metric.namespace, metric.pod, resource.project_id,
+     resource.location, resource.cluster_name, resource.node_name],
+    [value_container_memory_working_set_bytes_mean_aggregate:
+       aggregate(value_container_memory_working_set_bytes_mean)]
+""",
+"top_10_containers_by_memory_requested":
+"""
+fetch k8s_container
+| metric
+    'kubernetes.io/anthos/kube_pod_container_resource_requests_memory_bytes'
+| group_by 1m,
+    [value_kube_pod_container_resource_requests_memory_bytes_mean:
+       mean(value.kube_pod_container_resource_requests_memory_bytes)]
+| every 1m
+| top 10
+| group_by
+    [metric.container, metric.namespace, metric.node, metric.pod,
+     resource.location, resource.cluster_name, resource.namespace_name,
+     resource.pod_name, resource.container_name],
+    [value_kube_pod_container_resource_requests_memory_bytes_mean_aggregate:
+       aggregate(value_kube_pod_container_resource_requests_memory_bytes_mean)]
+""",
+"k8s_node_filesystem_size":
+"""
+fetch k8s_node
+| metric 'kubernetes.io/anthos/node_filesystem_files'
+| filter (metric.fstype != 'tmpfs')
+| group_by 1m,
+    [value_node_filesystem_files_mean: mean(value.node_filesystem_files)]
+| every 1m
+| top 10
+| group_by
+    [metric.device, metric.fstype, metric.mountpoint, resource.project_id,
+     resource.location, resource.cluster_name, resource.node_name],
+    [value_node_filesystem_files_mean_aggregate:
+       aggregate(value_node_filesystem_files_mean)]
+""",
+"top_10_containers_by_storage_requested":
+"""
+fetch k8s_container
+| metric 'kubernetes.io/anthos/kube_pod_container_resource_requests'
+| filter (metric.resource == 'ephemeral_storage')
+| group_by 1m,
+    [value_kube_pod_container_resource_requests_mean:
+       mean(value.kube_pod_container_resource_requests)]
+| every 1m
+| top 10
+| group_by
+    [metric.container, metric.namespace, metric.node, metric.pod, metric.unit,
+     resource.location, resource.cluster_name, resource.namespace_name,
+     resource.pod_name, resource.container_name],
+    [value_kube_pod_container_resource_requests_mean_aggregate:
+       aggregate(value_kube_pod_container_resource_requests_mean)]
 """
 
 
