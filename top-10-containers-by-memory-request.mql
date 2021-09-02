@@ -1,0 +1,14 @@
+fetch k8s_container
+| metric
+    'kubernetes.io/anthos/kube_pod_container_resource_requests_memory_bytes'
+| group_by 1m,
+    [value_kube_pod_container_resource_requests_memory_bytes_mean:
+       mean(value.kube_pod_container_resource_requests_memory_bytes)]
+| every 1m
+| top 10
+| group_by
+    [metric.container, metric.namespace, metric.node, metric.pod,
+     resource.location, resource.cluster_name, resource.namespace_name,
+     resource.pod_name, resource.container_name],
+    [value_kube_pod_container_resource_requests_memory_bytes_mean_aggregate:
+       aggregate(value_kube_pod_container_resource_requests_memory_bytes_mean)]

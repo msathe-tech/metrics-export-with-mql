@@ -1,0 +1,13 @@
+fetch k8s_node
+| metric 'kubernetes.io/anthos/container_memory_working_set_bytes'
+| filter (metric.pod =~ '.+')
+| group_by 1m,
+    [value_container_memory_working_set_bytes_mean:
+       mean(value.container_memory_working_set_bytes)]
+| every 1m
+| top 10
+| group_by
+    [metric.container, metric.namespace, metric.pod, resource.project_id,
+     resource.location, resource.cluster_name, resource.node_name],
+    [value_container_memory_working_set_bytes_mean_aggregate:
+       aggregate(value_container_memory_working_set_bytes_mean)]

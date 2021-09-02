@@ -1,0 +1,12 @@
+fetch k8s_node
+| metric 'kubernetes.io/anthos/node_filesystem_files'
+| filter (metric.fstype != 'tmpfs')
+| group_by 1m,
+    [value_node_filesystem_files_mean: mean(value.node_filesystem_files)]
+| every 1m
+| top 10
+| group_by
+    [metric.device, metric.fstype, metric.mountpoint, resource.project_id,
+     resource.location, resource.cluster_name, resource.node_name],
+    [value_node_filesystem_files_mean_aggregate:
+       aggregate(value_node_filesystem_files_mean)]

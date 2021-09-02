@@ -1,0 +1,5 @@
+fetch k8s_container
+| metric 'kubernetes.io/anthos/process_cpu_seconds_total'
+| align rate(1m)
+| every 1m
+| top 10, max(value.process_cpu_seconds_total)

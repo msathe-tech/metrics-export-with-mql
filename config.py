@@ -1,5 +1,5 @@
 # Replace the values as needed
-PROJECT_ID = "abm-on-gcctdemo"
+PROJECT_ID = "mcdonalds-edge-poc"
 PUBSUB_TOPIC = "mql_metric_export"
 BIGQUERY_DATASET = "metric_export"
 BIGQUERY_TABLE = "mql_metrics"
@@ -27,8 +27,7 @@ MQL_QUERYS = {
 # | group_by 5m,
 #     [value_allocated_for_project_mean: mean(value.allocated_for_project)]
 # | every 5m | within 1h
-# """,
-
+# """
 "k8s_node_total_containers_cpu_allocation_percentage":
 """
 { t_0:
@@ -61,7 +60,6 @@ MQL_QUERYS = {
            t_1.value_kube_node_status_allocatable_cpu_cores_mean_aggregate)
          * 100,
          '%')]
-| top 10, v_0
 """,
 "k8s_node_total_containers_memory_allocation_percentage":
 """
@@ -94,7 +92,6 @@ MQL_QUERYS = {
          div(t_0.value_memory_requested_bytes,
            t_1.value_allocatable_memory_bytes) * 100,
          '%')]
-| top 10, v_0
 """,
 "k8s_node_total_containers_storage_allocation_percentage":
 """
@@ -127,7 +124,6 @@ MQL_QUERYS = {
          div(t_0.value_kube_pod_container_resource_requests_mean_aggregate,
            t_1.value_node_filesystem_avail_bytes_mean_aggregate) * 100,
          '%')]
-| top 10, v_0
 """,
 "k8s_node_disk_usage_percentage":
 """
@@ -201,7 +197,6 @@ fetch k8s_container
 | metric 'kubernetes.io/anthos/process_cpu_seconds_total'
 | align rate(1m)
 | every 1m
-| top 10, max(value.process_cpu_seconds_total)
 """,
 "top_10_containers_by_cpu_cores_requested":
 """
@@ -211,7 +206,6 @@ fetch k8s_container
     [value_kube_pod_container_resource_requests_cpu_cores_mean:
        mean(value.kube_pod_container_resource_requests_cpu_cores)]
 | every 1m
-| top 10
 | group_by
     [metric.container, metric.namespace, metric.node, metric.pod,
      resource.location, resource.cluster_name, resource.namespace_name,
@@ -228,7 +222,6 @@ fetch k8s_node
     [value_container_memory_working_set_bytes_mean:
        mean(value.container_memory_working_set_bytes)]
 | every 1m
-| top 10
 | group_by
     [metric.container, metric.namespace, metric.pod, resource.project_id,
      resource.location, resource.cluster_name, resource.node_name],
@@ -244,7 +237,6 @@ fetch k8s_container
     [value_kube_pod_container_resource_requests_memory_bytes_mean:
        mean(value.kube_pod_container_resource_requests_memory_bytes)]
 | every 1m
-| top 10
 | group_by
     [metric.container, metric.namespace, metric.node, metric.pod,
      resource.location, resource.cluster_name, resource.namespace_name,
@@ -260,7 +252,6 @@ fetch k8s_node
 | group_by 1m,
     [value_node_filesystem_files_mean: mean(value.node_filesystem_files)]
 | every 1m
-| top 10
 | group_by
     [metric.device, metric.fstype, metric.mountpoint, resource.project_id,
      resource.location, resource.cluster_name, resource.node_name],
@@ -276,7 +267,6 @@ fetch k8s_container
     [value_kube_pod_container_resource_requests_mean:
        mean(value.kube_pod_container_resource_requests)]
 | every 1m
-| top 10
 | group_by
     [metric.container, metric.namespace, metric.node, metric.pod, metric.unit,
      resource.location, resource.cluster_name, resource.namespace_name,
@@ -284,8 +274,6 @@ fetch k8s_container
     [value_kube_pod_container_resource_requests_mean_aggregate:
        aggregate(value_kube_pod_container_resource_requests_mean)]
 """
-
-
 }
 
 BASE_URL = "https://monitoring.googleapis.com/v3/projects"
